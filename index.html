@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Wild West - 1xBet Clone - 2 Cases</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#d2a66a;min-height:100vh;display:flex;justify-content:center}
+.wrap{width:100%;max-width:380px;background:url('https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=600') bottom/cover no-repeat #c18a3a;min-height:100vh;position:relative;display:flex;flex-direction:column}
+.top{padding:10px 12px;display:flex;justify-content:space-between;align-items:center;background:#0006}
+.balance{background:#3a3a3a;border-radius:20px;padding:4px 10px;color:#fff;font-size:13px;display:flex;align-items:center;gap:6px}
+.balance b{font-weight:900}
+.balance.plus{background:#2ecc71;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900}
+.help{width:36px;height:36px;background:linear-gradient(180deg,#3ab7c7,#1a7a8a);border:2px solid #6ad8e8;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:#fff;box-shadow:0 3px 0 #114f5a}
+.info-bar{background:linear-gradient(90deg,#5a3a18,#3d2410);border:2px solid #8a5a24;border-radius:8px;padding:8px 10px;margin:12px 12px 0;text-align:center;color:#f5d6a0;font-size:12px;font-weight:700;box-shadow:0 3px 0 #2a1a08}
+.tabs{display:flex;justify-content:center;gap:0;margin:14px 20px 0;position:relative;z-index:2}
+.tab{flex:1;background:#c9a57a;color:#5a3a18;padding:10px;text-align:center;font-weight:900;border:2px solid #8a5a24;border-bottom:none;border-radius:10px 10px 0 0;cursor:pointer;transform:translateY(4px)}
+.tab.active{background:#e6d0a3;color:#2a1a08;transform:translateY(0);z-index:3;box-shadow:0 -2px 10px #0005}
+.arrow{position:absolute;top:50%;font-size:18px;color:#e6d0a3;transform:translateY(-50%)}
+.arrow.l{left:-18px}.arrow.r{right:-18px}
+
+.board{background:linear-gradient(180deg,#e6d0a3,#c9a57a);border:3px solid #8a5a24;border-radius:12px;margin:0 14px;padding:12px 10px;display:grid;grid-template-columns:1fr 1fr;gap:10px;box-shadow:inset 0 0 20px #8a5a2455,0 5px 0 #5a3a18;position:relative}
+.cell{height:48px;background:linear-gradient(180deg,#e8d9b5,#b89a6e);border:2px solid #8a6a3a;border-radius:6px;box-shadow:inset 0 2px 0 #fff8,0 2px 0 #8a5a24;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;transition:.15s}
+.cell:hover{transform:scale(1.03);border-color:#ffd54f}
+.cell.good{background:linear-gradient(180deg,#8effa0,#2ecc71);border-color:#1a8a3a}
+.cell.bad{background:linear-gradient(180deg,#ff8a8a,#e74c3c);border-color:#8a1a1a;animation:shake.3s}
+.cell.locked{opacity:.35;pointer-events:none}
+.cell.blocked{opacity:.2;pointer-events:none}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+.bottom-bar{background:linear-gradient(180deg,#d4a76a,#8a5a24);padding:12px;display:flex;gap:8px;align-items:center;margin-top:auto;border-top:4px solid #5a3a18}
+.bet-box{background:#f5e6c8;border:2px solid #8a5a24;border-radius:6px;padding:8px 10px;font-weight:900;font-size:14px;min-width:90px}
+.btn-coins{width:52px;height:46px;background:linear-gradient(180deg,#ff9f2a,#e67e00);border:2px solid #8a4a00;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:22px;cursor:pointer;box-shadow:0 3px 0 #8a4a00}
+.btn-play{flex:1;height:50px;background:linear-gradient(180deg,#7ac74f,#4a8a2a);border:2px solid #2a5a14;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#fff;cursor:pointer;box-shadow:0 4px 0 #2a5a14}
+.btn-play:active{transform:translateY(3px);box-shadow:0 1px 0 #2a5a14}
+.status{text-align:center;color:#fff;font-weight:900;font-size:12px;margin:8px;text-shadow:0 2px 0 #000}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div style="color:#fff">‹</div>
+    <div class="balance"><span id="bal">21.6 F</span> <span class="plus">+</span></div>
+    <div>⚙️</div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin:18px 14px 0">
+    <div class="help">?</div>
+    <div class="info-bar" id="info">Sélectionnez le niveau de difficulté et placez votre pari!</div>
+  </div>
+
+  <div style="position:relative;margin:0 20px">
+    <div class="tabs">
+      <span class="arrow l">➔</span>
+      <div class="tab active" data-x="2">2x</div>
+      <div class="tab" data-x="3">3x</div>
+      <span class="arrow r">⬅</span>
+    </div>
+  </div>
+
+  <div class="board" id="board"></div>
+  <div class="status" id="status">Mise: 500 XOF - Cliquez JOUER</div>
+
+  <div class="bottom-bar">
+    <div class="bet-box"><span id="betDisplay">500 XOF</span></div>
+    <div class="btn-coins" id="btnCoins">🪙</div>
+    <div class="btn-play" id="btnPlay">▶</div>
+  </div>
+</div>
+
+<script>
+const ROWS=6, COLS=2;
+let balance=10000, bet=500, difficulty=2, level=0, traps=[], playing=false;
+
+const boardEl=document.getElementById('board'), infoEl=document.getElementById('info'), statusEl=document.getElementById('status');
+const balEl=document.getElementById('bal'), betDisplay=document.getElementById('betDisplay'), btnPlay=document.getElementById('btnPlay');
+
+const MULTIPLIER = { 2:[1.15,1.32,1.52,1.75,2.01,2.31], 3:[1.35,1.82,2.46,3.32,4.48,6.05] };
+
+function buildBoard(isPreview=true){
+  boardEl.innerHTML=''; traps=[];
+  for(let r=0;r<ROWS;r++){
+    let t=Math.floor(Math.random()*COLS);
+    traps.push(t);
+    for(let c=0;c<COLS;c++){
+      const cell=document.createElement('div');
+      cell.className='cell'+(isPreview?' locked':'');
+      cell.dataset.r=r; cell.dataset.c=c;
+      if(!isPreview) cell.onclick=()=>pick(r,c,cell);
+      boardEl.appendChild(cell);
+    }
+  }
+}
+
+function startGame(){
+  if(playing) return;
+  if(balance<bet){ statusEl.textContent='Solde insuffisant'; return; }
+  balance-=bet; playing=true; level=0;
+  buildBoard(false);
+  document.querySelectorAll('.cell').forEach(cell=>{
+    const r=parseInt(cell.dataset.r);
+    cell.classList.toggle('locked', r!==0);
+  });
+  infoEl.textContent=`Niveau ${level+1}/${ROWS} - Choisissez GAUCHE ou DROITE`;
+  statusEl.textContent=`En jeu - Cote x${MULTIPLIER[difficulty][0]} - Encaissez à tout moment`;
+  btnPlay.textContent='💰'; btnPlay.style.background='linear-gradient(180deg,#ffd54f,#ff9800)';
+  updateBal();
+}
+
+function pick(r,c,cellEl){
+  if(!playing || r!==level) return;
+  const isBad = c===traps[r];
+  cellEl.textContent=isBad?'💥':'✅';
+  cellEl.classList.add(isBad?'bad':'good');
+
+  // bloque l'autre case de la rangée
+  document.querySelectorAll(`.cell[data-r="${r}"]`).forEach(o=>{ if(o!==cellEl) o.classList.add('blocked'); });
+
+  if(isBad){
+    infoEl.textContent=`💥 Perdu à l'étage ${r+1}!`;
+    statusEl.textContent=`Vous avez perdu ${bet} XOF`;
+    playing=false; revealAll(); btnPlay.textContent='▶'; btnPlay.style.background='';
+  }else{
+    level++;
+    if(level>=ROWS){
+      const win=Math.floor(bet*MULTIPLIER[difficulty][ROWS-1]);
+      balance+=win;
+      infoEl.textContent=`🎉 GAGNÉ! x${MULTIPLIER[difficulty][ROWS-1]} = ${win} XOF`;
+      statusEl.textContent=`JACKPOT! +${win} XOF`;
+      playing=false; btnPlay.textContent='▶'; btnPlay.style.background=''; revealAll();
+    }else{
+      document.querySelectorAll('.cell').forEach(cell=>{
+        const rr=parseInt(cell.dataset.r);
+        if(rr===level) cell.classList.remove('locked');
+        else if(rr>level) cell.classList.add('locked');
+      });
+      const gain=Math.floor(bet*MULTIPLIER[difficulty][level-1]);
+      infoEl.textContent=`✅ Étage ${r+1} validé! Prochain: x${MULTIPLIER[difficulty][level]}`;
+      statusEl.textContent=`Gain actuel: ${gain} XOF - Cliquez 💰 pour encaisser ou continuez`;
+    }
+  }
+  updateBal();
+}
+
+function cashout(){
+  if(!playing || level===0) return;
+  const gain=Math.floor(bet*MULTIPLIER[difficulty][level-1]);
+  balance+=gain;
+  infoEl.textContent=`💰 Encaissé x${MULTIPLIER[difficulty][level-1]} = ${gain} XOF`;
+  statusEl.textContent=`Encaissé! +${gain} XOF`;
+  playing=false; revealAll(); btnPlay.textContent='▶'; btnPlay.style.background=''; updateBal();
+}
+
+function revealAll(){
+  document.querySelectorAll('.cell').forEach(cell=>{
+    cell.classList.remove('locked');
+    const r=parseInt(cell.dataset.r), c=parseInt(cell.dataset.c);
+    if(traps[r]===c &&!cell.classList.contains('good') &&!cell.classList.contains('bad')){
+      cell.textContent='💣'; cell.style.opacity='.5';
+    }
+  });
+}
+
+function updateBal(){ balEl.textContent=balance.toLocaleString('fr-FR')+' F'; }
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  if(playing) return;
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active'); difficulty=parseInt(t.dataset.x);
+  buildBoard(true);
+});
+
+btnPlay.onclick=()=>{ if(!playing) startGame(); else cashout(); };
+document.getElementById('btnCoins').onclick=()=>{
+  const bets=[100,200,500,1000,2000,5000];
+  let idx=bets.indexOf(bet); bet=bets[(idx+1)%bets.length];
+  betDisplay.textContent=bet+' XOF';
+};
+
+buildBoard(true);
+</script>
+</body>
+</html>
